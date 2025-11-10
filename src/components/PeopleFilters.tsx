@@ -1,18 +1,37 @@
+import { NavLink, useLocation } from 'react-router-dom';
+
 export const PeopleFilters = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const sex = searchParams.get('sex');
+
+  function col() {
+    console.log(searchParams.get('sex'));
+  }
+
   return (
     <nav className="panel">
       <p className="panel-heading">Filters</p>
 
       <p className="panel-tabs" data-cy="SexFilter">
-        <a className="is-active" href="#/people">
+        <NavLink to="/people" className={!sex ? 'is-active' : ''}>
           All
-        </a>
-        <a className="" href="#/people?sex=m">
+        </NavLink>
+        <NavLink
+          className={sex === 'm' ? 'is-active' : ''}
+          to="?sex=m"
+          onClick={col}
+        >
           Male
-        </a>
-        <a className="" href="#/people?sex=f">
+        </NavLink>
+
+        <NavLink
+          className={sex === 'f' ? 'is-active' : ''}
+          to="?sex=f"
+          onClick={col}
+        >
           Female
-        </a>
+        </NavLink>
       </p>
 
       <div className="panel-block">
