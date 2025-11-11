@@ -2,9 +2,11 @@ import { PeopleFilters } from './PeopleFilters';
 import { Loader } from './Loader';
 import { PeopleTable } from './PeopleTable';
 import { useRead } from '../hooks/useRead';
+import { useFilterPeople } from '../hooks/useFilterPeople';
 
 export const PeoplePage = () => {
   const { people, hasError, isLoading } = useRead();
+  const { filteredPeople } = useFilterPeople(people);
 
   return (
     <>
@@ -32,7 +34,7 @@ export const PeoplePage = () => {
               )}
 
               {people?.length !== 0 && !isLoading && (
-                <PeopleTable people={people} />
+                <PeopleTable people={filteredPeople} />
               )}
             </div>
           </div>
