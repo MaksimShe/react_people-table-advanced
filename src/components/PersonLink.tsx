@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Person } from '../types';
 
 export const PersonLink = ({
@@ -8,6 +8,8 @@ export const PersonLink = ({
   name: string | null;
   person?: Person;
 }) => {
+  const location = useLocation();
+
   if (!name) {
     return <span>-</span>;
   }
@@ -17,7 +19,13 @@ export const PersonLink = ({
 
   if (person && person.slug) {
     return (
-      <Link to={`/people/${person.slug}`} className={className}>
+      <Link
+        to={{
+          pathname: `/people/${person.slug}`,
+          search: location.search,
+        }}
+        className={className}
+      >
         {name}
       </Link>
     );

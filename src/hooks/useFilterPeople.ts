@@ -26,8 +26,11 @@ export const useFilterPeople = (people: Person[]) => {
     }
 
     if (query) {
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(query.toLowerCase()),
+      result = result.filter(
+        p =>
+          p.name.toLowerCase().includes(query.toLowerCase()) ||
+          p?.motherName?.toLowerCase().includes(query.toLowerCase()) ||
+          p?.fatherName?.toLowerCase().includes(query.toLowerCase()),
       );
     }
 
@@ -59,7 +62,7 @@ export const useFilterPeople = (people: Person[]) => {
     }
 
     setFilteredPeople(result);
-  }, [people, location.search]); // ✅ тепер реагує на зміну URL
+  }, [people, location.search]);
 
   return { filteredPeople };
 };

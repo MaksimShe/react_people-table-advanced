@@ -41,9 +41,18 @@ export const PeopleTable: React.FC<Props> = ({ people }) => {
   };
 
   const getSortIcon = (column: string) => {
-    if (currentSort !== column) return 'fas fa-sort';
-    if (currentOrder === 'asc') return 'fas fa-sort-up';
-    if (currentOrder === 'desc') return 'fas fa-sort-down';
+    if (currentSort !== column) {
+      return 'fas fa-sort';
+    }
+
+    if (currentOrder === 'asc') {
+      return 'fas fa-sort-up';
+    }
+
+    if (currentOrder === 'desc') {
+      return 'fas fa-sort-down';
+    }
+
     return 'fas fa-sort';
   };
 

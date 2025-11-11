@@ -30,8 +30,9 @@ export const PeopleFilters = () => {
   ) {
     const paramsToUpdate: Record<string, string | string[] | null> = {};
 
-    if (queryParam === FilterType.centuries) {
-      // окремо обробляємо toggle логіку для століть
+    if (action === 'delete') {
+      paramsToUpdate[queryParam] = null;
+    } else if (queryParam === FilterType.centuries) {
       const current = searchParams.getAll(FilterType.centuries);
 
       if (current.includes(value)) {
@@ -39,11 +40,7 @@ export const PeopleFilters = () => {
       } else {
         paramsToUpdate[FilterType.centuries] = [...current, value];
       }
-    } else if (action === 'delete') {
-      // просто видаляємо параметр
-      paramsToUpdate[queryParam] = null;
     } else {
-      // звичайна заміна
       paramsToUpdate[queryParam] = value;
     }
 
@@ -90,7 +87,15 @@ export const PeopleFilters = () => {
             className="input"
             placeholder="Search"
             value={query}
-            onChange={e => handleClick(FilterType.query, e.target.value)}
+            onChange={e => {
+              const value = e.target.value.trim();
+
+              if (value === '') {
+                handleClick(FilterType.query, '', 'delete');
+              } else {
+                handleClick(FilterType.query, value);
+              }
+            }}
           />
           <span className="icon is-left">
             <i className="fas fa-search" aria-hidden="true" />
