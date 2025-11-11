@@ -1,47 +1,61 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
+import { getSearchWith } from '../utils/searchHelper';
+import { useMemo } from 'react';
 
-type Action = 'delete' | 'change' | 'add';
+enum FilterType {
+  sex = 'sex',
+  query = 'query',
+  centuries = 'centuries',
+}
 
 export const PeopleFilters = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = new URLSearchParams(location.search);
-  const sex = searchParams.get('sex');
+
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+
+  const sex = searchParams.get(FilterType.sex);
+  const centuries = searchParams.getAll(FilterType.centuries);
+  const query = searchParams.get(FilterType.query) || '';
   const buttonsCentury = [16, 17, 18, 19, 20];
 
   function handleClick(
     queryParam: FilterType,
     value: string,
-    action: Action = 'change',
+    action: 'add' | 'delete' | 'change' = 'change',
   ) {
-    if (action === 'delete') {
-      searchParams.delete(queryParam);
-    } else if (action === 'add') {
-      if (searchParams.getAll('centuries').includes(value)) {
-        searchParams.delete(queryParam, value);
+    const paramsToUpdate: Record<string, string | string[] | null> = {};
+
+    if (queryParam === FilterType.centuries) {
+      // окремо обробляємо toggle логіку для століть
+      const current = searchParams.getAll(FilterType.centuries);
+
+      if (current.includes(value)) {
+        paramsToUpdate[FilterType.centuries] = current.filter(c => c !== value);
       } else {
-        searchParams.append(queryParam, value);
+        paramsToUpdate[FilterType.centuries] = [...current, value];
       }
+    } else if (action === 'delete') {
+      // просто видаляємо параметр
+      paramsToUpdate[queryParam] = null;
     } else {
-      if (value) {
-        searchParams.set(queryParam, value);
-      } else {
-        searchParams.delete(queryParam);
-      }
+      // звичайна заміна
+      paramsToUpdate[queryParam] = value;
     }
+
+    const newSearch = getSearchWith(searchParams, paramsToUpdate);
 
     navigate({
       pathname: location.pathname,
-      search: `?${searchParams.toString()}`,
+      search: `?${newSearch}`,
     });
   }
 
-  const thisActiveCenturyBtn = (num: number) => {
-    const newParams = new URLSearchParams(location.search);
-
-    return newParams.getAll('centuries').includes(String(num));
-  };
+  const thisActiveCenturyBtn = (num: number) => centuries.includes(String(num));
 
   return (
     <nav className="panel">
@@ -50,20 +64,19 @@ export const PeopleFilters = () => {
       <p className="panel-tabs" data-cy="SexFilter">
         <a
           className={!sex ? 'is-active' : ''}
-          onClick={() => handleClick('sex', '', 'delete')}
+          onClick={() => handleClick(FilterType.sex, '', 'delete')}
         >
           All
         </a>
         <a
           className={sex === 'm' ? 'is-active' : ''}
-          onClick={() => handleClick('sex', 'm')}
+          onClick={() => handleClick(FilterType.sex, 'm')}
         >
           Male
         </a>
-
         <a
           className={sex === 'f' ? 'is-active' : ''}
-          onClick={() => handleClick('sex', 'f')}
+          onClick={() => handleClick(FilterType.sex, 'f')}
         >
           Female
         </a>
@@ -76,9 +89,9 @@ export const PeopleFilters = () => {
             type="search"
             className="input"
             placeholder="Search"
-            onInput={e => handleClick('query', e.currentTarget.value)}
+            value={query}
+            onChange={e => handleClick(FilterType.query, e.target.value)}
           />
-
           <span className="icon is-left">
             <i className="fas fa-search" aria-hidden="true" />
           </span>
@@ -95,7 +108,9 @@ export const PeopleFilters = () => {
                 className={classNames('button mr-1', {
                   'is-info': thisActiveCenturyBtn(item),
                 })}
-                onClick={() => handleClick('centuries', String(item), 'add')}
+                onClick={() =>
+                  handleClick(FilterType.centuries, String(item), 'add')
+                }
               >
                 {item}
               </a>
@@ -106,7 +121,7 @@ export const PeopleFilters = () => {
             <a
               data-cy="centuryALL"
               className="button is-success is-outlined"
-              onClick={() => handleClick('centuries', '', 'delete')}
+              onClick={() => handleClick(FilterType.centuries, '', 'delete')}
             >
               All
             </a>
@@ -115,7 +130,21 @@ export const PeopleFilters = () => {
       </div>
 
       <div className="panel-block">
-        <a className="button is-link is-outlined is-fullwidth" href="#/people">
+        <a
+          className="button is-link is-outlined is-fullwidth"
+          onClick={() => {
+            const newSearch = getSearchWith(searchParams, {
+              query: null,
+              sex: null,
+              centuries: null,
+            });
+
+            navigate({
+              pathname: location.pathname,
+              search: `?${newSearch}`,
+            });
+          }}
+        >
           Reset all filters
         </a>
       </div>
